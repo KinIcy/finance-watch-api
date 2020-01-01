@@ -1,12 +1,7 @@
 const server = require('../../server');
 const HttpClient = require('../../components/httpClient');
+const { delay } = require('../utils');
 const assert = require('assert');
-
-function delay(ms) {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms)
-  })
-}
 
 async function test() {
   const port = 3456;
@@ -35,8 +30,4 @@ async function test() {
   server.close();
 }
 
-try {
-  test();
-} catch(error) {
-  console.error(error.message || error.statusCode)
-}
+module.exports = test

@@ -4,7 +4,7 @@
   "description": "FinanceWatch API",
   "main": "server.js",
   "scripts": {
-    "test": "node test/API/api.test.js"
+    "test": "node test"
   },
   "author": "Jason Lopez <sebastianlopezn@gmail.com>",
   "license": "ISC",

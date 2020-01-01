@@ -14,6 +14,10 @@ class Logger {
     if (!this.file) return;
     this.file.write(`${value}\n`);
   }
+
+  close() {
+    return this.file.close()
+  }
 }
 
 module.exports = Logger;
