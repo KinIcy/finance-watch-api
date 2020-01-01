@@ -1,5 +1,5 @@
-const server = require('./server');
-const HttpClient = require('./components/httpClient');
+const server = require('../../server');
+const HttpClient = require('../../components/httpClient');
 const assert = require('assert');
 
 function delay(ms) {
