@@ -36,6 +36,12 @@ Sample response:
 
 This project requires Node.js version 11 or higher. No further dependencies are required.
 
+## Testing
+
+```
+  npm test
+```
+
 ## Authors
 
 * **Jason Lopez** - *Initial work* - [KinIcy](https://github.com/KinIcy)
