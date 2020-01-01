@@ -1,23 +1,16 @@
 const http = require('http');
 const HttpClient = require('./components/httpClient');
-const Logger = require('./components/logger');
 const Router = require('./components/router');
+
+const logger = require('./middleware/logger');
 
 const port = process.env.PORT || 3456;
 const token = process.env.IEX_API_TOKEN || 'pk_3d9df6c22bf3468fbeb516ff3c54ee59';
 const apiUrl = process.env.IEX_API_URL || 'https://cloud.iexapis.com/stable';
-const logFilePath = process.env.LOG_FILE_PATH || 'request_log.log';
-
 const iexClient = new HttpClient(apiUrl);
-const logger = new Logger(logFilePath);
 const router = new Router();
 
-router.use(async (req, res, next) => {
-  const time = new Date();
-  await next();
-  const isError = res.statusCode !== 200;
-  logger.log(`${req.url} ${time.toLocaleString('en-US', { hour12: false })} ${isError ? 'ERROR' : 'OK'}`);
-});
+router.use(logger);
 
 router.get(/^\/stock\/(.+)\//, async (req, res) => {
   const [, symbol] = req.match;
@@ -29,7 +22,11 @@ router.get(/^\/stock\/(.+)\//, async (req, res) => {
         iexClient.$get(`/stock/${symbol}/news/last/1?token=${token}`, { json: true }),
       ]);
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ quote: data[0], logo: data[1].url, lastNew: data[2][0].url }));
+      res.end(JSON.stringify({
+        quote: data[0],
+        logo: data[1].url,
+        lastNew: data[2][0].url,
+      }));
     }
   } catch (error) {
     if (error.statusCode === 404) {
