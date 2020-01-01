@@ -2,7 +2,7 @@ const http = require('http');
 const https = require('https');
 
 class HttpClient {
-  constructor(baseURL = '') {
+  constructor(baseURL) {
     this.baseURL = baseURL;
   }
 
@@ -16,7 +16,7 @@ class HttpClient {
     }
 
     return new Promise((resolve, reject) => {
-      fetchMethod(`${this.baseURL}${url}`, (res) => {
+      fetchMethod(`${this.baseURL || ''}${url}`, (res) => {
         const data = [];
         res.on('data', (chunk) => data.push(chunk));
         res.on('error', (error) => reject(error));
