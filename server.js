@@ -32,9 +32,14 @@ router.get(/^\/stock\/(.+)\//, async (req, res) => {
       res.end(JSON.stringify({ quote: data[0], logo: data[1].url, lastNew: data[2][0].url }));
     }
   } catch (error) {
-    res.writeHead(500);
-    res.end(error.message);
-    throw error;
+    if (error.statusCode === 404) {
+      res.writeHead(404);
+      res.end('unknown stock symbol');
+    } else {
+      res.writeHead(500);
+      res.end(error.message);
+      throw error;
+    }
   }
 });
 

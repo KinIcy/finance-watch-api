@@ -22,8 +22,10 @@ class HttpClient {
         res.on('error', (error) => reject(error));
 
         res.on('end', () => {
-          res.data = options.json ? JSON.parse(data.join()) : data.join();
-          resolve(res);
+          if (res.statusCode === 200) {
+            res.data = options.json ? JSON.parse(data.join()) : data.join();
+            resolve(res);
+          } else reject(res);
         });
       }).on('error', (error) => reject(error)).end();
     });
