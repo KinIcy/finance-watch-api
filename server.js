@@ -1,6 +1,7 @@
 const http = require('http');
 const HttpClient = require('./components/httpClient');
 const Logger = require('./components/logger');
+const Router = require('./components/router');
 
 const port = process.env.PORT || 3456;
 const token = process.env.IEX_API_TOKEN || 'pk_3d9df6c22bf3468fbeb516ff3c54ee59';
@@ -9,38 +10,35 @@ const logFilePath = process.env.LOG_FILE_PATH || 'request_log.log';
 
 const iexClient = new HttpClient(apiUrl);
 const logger = new Logger(logFilePath);
+const router = new Router();
 
-async function router(request, response) {
+router.use(async (req, res, next) => {
   const time = new Date();
-  let isError = false;
+  await next();
+  const isError = res.statusCode !== 200;
+  logger.log(`${req.url} ${time.toLocaleString('en-US', { hour12: false })} ${isError ? 'ERROR' : 'OK'}`);
+});
 
+router.get(/^\/stock\/(.+)\//, async (req, res) => {
+  const [, symbol] = req.match;
   try {
-    const url = new URL(request.url, 'http://localhost/');
-    const [, symbol] = `${url.pathname}`.match(/^\/stock\/(.+)\//);
     if (symbol) {
       const data = await Promise.all([
         iexClient.$get(`/stock/${symbol}/quote/latestPrice?token=${token}`),
         iexClient.$get(`/stock/${symbol}/logo?token=${token}`, { json: true }),
         iexClient.$get(`/stock/${symbol}/news/last/1?token=${token}`, { json: true }),
       ]);
-      response.writeHead(200, { 'Content-Type': 'application/json' });
-      response.end(JSON.stringify({ quote: data[0], logo: data[1].url, lastNew: data[2][0].url }));
-    } else {
-      response.writeHead(404);
-      response.end('Not Found');
-      isError = true;
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ quote: data[0], logo: data[1].url, lastNew: data[2][0].url }));
     }
   } catch (error) {
-    response.writeHead(500);
-    response.end(error.message);
-    isError = true;
+    res.writeHead(500);
+    res.end(error.message);
     throw error;
-  } finally {
-    logger.log(`${request.url} ${time.toLocaleString('en-US', { hour12: false })} ${isError ? 'ERROR' : 'OK'}`);
   }
-}
+});
 
-const server = http.createServer(router);
+const server = http.createServer(router.handle());
 
 if (require.main === module) {
   server.listen(port);
